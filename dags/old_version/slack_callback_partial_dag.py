@@ -13,9 +13,10 @@ from functools import partial
 
 from airflow import DAG
 from airflow.operators.bash import BashOperator
-from airflow.operators.dummy import DummyOperator
+from airflow.operators.empty import EmptyOperator
 from airflow.operators.python import PythonOperator
-from include import slack_callback_functions_with_partial
+
+from include.old_version import slack_callback_functions_with_partial
 
 default_args = {
     "owner": "airflow",
@@ -50,11 +51,11 @@ with DAG(
         http_conn_id="slack_callbacks_partial",
     ),
     catchup=False,
-    doc_md=__doc__
+    doc_md=__doc__,
 ) as dag:
     # This task uses on_execute_callback to send a notification when the task begins
-    dummy_trigger = DummyOperator(
-        task_id="dummy_trigger",
+    empty_trigger = EmptyOperator(
+        task_id="empty_trigger",
         on_execute_callback=partial(
             slack_callback_functions_with_partial.dag_triggered_callback,
             http_conn_id="slack_callbacks_partial",
@@ -63,7 +64,7 @@ with DAG(
     )
 
     # This task uses the default_args on_success_callback
-    dummy_success_test = DummyOperator(task_id="dummy_success_test")
+    empty_success_test = EmptyOperator(task_id="empty_success_test")
 
     # This task sends a Slack message via a python_callable
     slack_test_func = PythonOperator(
@@ -89,8 +90,8 @@ with DAG(
     )
 
     # Task will still succeed despite previous task failing
-    dummy_dag_success = DummyOperator(
-        task_id="dummy_dag_success",
+    empty_dag_success = EmptyOperator(
+        task_id="empty_dag_success",
         on_success_callback=partial(
             slack_callback_functions_with_partial.dag_success_callback,
             http_conn_id="slack_callbacks_partial",
@@ -99,10 +100,10 @@ with DAG(
     )
 
     (
-        dummy_trigger
-        >> dummy_success_test
+        empty_trigger
+        >> empty_success_test
         >> slack_test_func
         >> bash_sleep
         >> bash_fail
-        >> dummy_dag_success
+        >> empty_dag_success
     )

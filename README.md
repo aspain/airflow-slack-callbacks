@@ -1,6 +1,7 @@
 # Airflow Callbacks
 
 Showcasing several ways to implement Airflow callbacks and notifications via Slack.
+Note: DAGs and functions in the `/dags/new_version` and `/include/new_version/` directories have been updated to Slack Provider 8.0.0 requirements. Those in the `/old_version` directories are now outdated and may not work as expected.
 
 ## Description
 
